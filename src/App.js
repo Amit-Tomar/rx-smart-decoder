@@ -13,48 +13,18 @@ import Typography from "@material-ui/core/Typography";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
+import matchSorter from "match-sorter";
+
 import {
   faPrescriptionBottle,
   faCalendarAlt,
   faPills,
   faClock,
   faPrescription,
-  faCapsules
+  faCapsules,
+  faNotesMedical,
+  faCheck
 } from "@fortawesome/free-solid-svg-icons";
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    width: "100%"
-  },
-  button: {
-    marginRight: theme.spacing(1)
-  },
-  instructions: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1)
-  }
-}));
-
-function getSteps() {
-  return ["Medicine", "Dosage", "Dosing Time", "Duration", "Suggestion"];
-}
-
-function getStepContent(step) {
-  switch (step) {
-    case 0:
-      return "Medicine";
-    case 1:
-      return "Dosage";
-    case 2:
-      return "Dosing Time";
-    case 3:
-      return "Duration";
-    case 4:
-      return "Suggestion";
-    default:
-      return "Unknown step";
-  }
-}
 
 const Label = styled("label")`
   padding: 0 0 4px;
@@ -112,6 +82,7 @@ const Tag = styled(({ label, onDelete, currentInputIndex, ...props }) => (
     {currentInputIndex === 1 && <FontAwesomeIcon icon={faPrescriptionBottle} />}
     {currentInputIndex === 2 && <FontAwesomeIcon icon={faClock} />}
     {currentInputIndex === 3 && <FontAwesomeIcon icon={faCalendarAlt} />}
+    {currentInputIndex >= 4 && <FontAwesomeIcon icon={faNotesMedical} />}
     <span>{label}</span>
     {/* <CloseIcon onClick={onDelete} /> */}
     {/* <AdjustOutlinedIcon></AdjustOutlinedIcon> */}
@@ -194,7 +165,25 @@ const Listbox = styled("ul")`
   }
 `;
 
-export default function CustomizedHook() {
+const filterOptions = (options, { inputValue }) =>
+  matchSorter(options, inputValue);
+
+const handleAutocomplete = (e, valueTags) => {
+  //   e.preventDefault();
+  console.log(e);
+  //   const tagIdsArray = [];
+  //   valueTags.forEach(valueTag => {
+  //     tagIdsArray.push(
+  //       Number(tags.filter(tag => valueTag.title === tag.title).shift().id)
+  //     );
+  //   });
+  //   const tagIds = [...new Set(tagIdsArray)];
+  //   handleTag(tagIds);
+};
+
+var autoSuggestedList = [];
+
+export default function Autocomplete(filterOptions = { filterOptions }) {
   const {
     getRootProps,
     getInputLabelProps,
@@ -211,14 +200,75 @@ export default function CustomizedHook() {
     defaultValue: null,
     multiple: true,
     freeSolo: true,
-    options: medications,
-    getOptionLabel: option => option.medicine
+    options: autoSuggestedList,
+    // onChange: handleAutocomplete,
+    getOptionLabel: option => option
   });
 
   const activeStep = value.length;
   const [skipped, setSkipped] = React.useState(new Set());
-  const steps = getSteps();
-  const labelDescriptions = [
+
+  autoSuggestedList.length = 0;
+  if (activeStep === 0) {
+    autoSuggestedList = medications.map(medication => medication.medicine);
+  } else if (activeStep === 1) {
+    medications.forEach(medication => {
+      if (medication.medicine === value[0]) {
+        autoSuggestedList = medication.dosage.slice();
+      }
+    });
+
+    const currentValue = getInputProps().value;
+
+    if (currentValue) {
+      autoSuggestedList.push(currentValue + "mg");
+      autoSuggestedList.push(currentValue + "ml");
+      autoSuggestedList.push(currentValue + "mg/ml");
+    }
+  } else if (activeStep === 2) {
+    const currentValue = +getInputProps().value;
+
+    if (!isNaN(currentValue)) {
+      autoSuggestedList.push(
+        currentValue + "-" + currentValue + "-" + currentValue
+      );
+      autoSuggestedList.push(
+        currentValue +
+          "-" +
+          currentValue +
+          "-" +
+          currentValue +
+          "-" +
+          currentValue
+      );
+      autoSuggestedList.push("0-" + currentValue + "-" + currentValue);
+      autoSuggestedList.push(currentValue + "-0-" + currentValue);
+      autoSuggestedList.push(currentValue + "-" + currentValue + "-0");
+
+      autoSuggestedList.push(
+        "0-" + currentValue + "-" + currentValue + "-" + currentValue
+      );
+      autoSuggestedList.push(
+        currentValue + "-0-" + currentValue + "-" + currentValue
+      );
+      autoSuggestedList.push(
+        currentValue + "-" + currentValue + "-0-" + currentValue
+      );
+      autoSuggestedList.push(
+        currentValue + "-" + currentValue + currentValue + "-0"
+      );
+    }
+  } else if (activeStep === 3) {
+    const currentValue = +getInputProps().value;
+
+    if (!isNaN(currentValue)) {
+      autoSuggestedList.push(currentValue + "days");
+      autoSuggestedList.push(currentValue + "weeks");
+      autoSuggestedList.push(currentValue + "months");
+    }
+  }
+
+  const stepDescriptions = [
     "Medicine",
     "Dosage",
     "Dosing Time",
@@ -226,9 +276,22 @@ export default function CustomizedHook() {
     "Remark"
   ];
 
-  const getLabelDescription = () => {
-    return labelDescriptions[activeStep];
-  };
+  function getStepContent(step) {
+    switch (step) {
+      case 0:
+        return "Medicine";
+      case 1:
+        return "Dosage";
+      case 2:
+        return "Dosing Time";
+      case 3:
+        return "Duration";
+      case 4:
+        return "Suggestion";
+      default:
+        return <FontAwesomeIcon icon={faCheck} color="green" />;
+    }
+  }
 
   const isStepOptional = step => {
     return step === 4;
@@ -277,7 +340,7 @@ export default function CustomizedHook() {
       <Grid container spacing={0}>
         <Grid item xs={3}>
           <Stepper activeStep={activeStep} orientation="vertical">
-            {steps.map((label, index) => {
+            {stepDescriptions.map((label, index) => {
               label = index < 4 ? label + "*" : label;
               const stepProps = {};
               const labelProps = {};
@@ -308,11 +371,11 @@ export default function CustomizedHook() {
                 className={focused ? "focused" : ""}
               >
                 <LabelDescriptor {...getInputLabelProps()}>
-                  {getLabelDescription()}
+                  {getStepContent(activeStep)}
                 </LabelDescriptor>
                 {value.map((option, index) => (
                   <Tag
-                    label={option.medicine || option}
+                    label={option || option}
                     currentInputIndex={index}
                     {...getTagProps({ index })}
                   />
@@ -324,7 +387,7 @@ export default function CustomizedHook() {
               <Listbox {...getListboxProps()}>
                 {groupedOptions.map((option, index) => (
                   <li {...getOptionProps({ option, index })}>
-                    <span>{option.medicine}</span>
+                    <span>{option}</span>
                     <CheckIcon fontSize="small" />
                   </li>
                 ))}
@@ -338,7 +401,7 @@ export default function CustomizedHook() {
 }
 
 // Top 100 films as rated by IMDb users. http://www.imdb.com/chart/top
-const medications = [
+var medications = [
   {
     medicine: "Risperidone",
     dosage: ["0.25mg", "0.5mg", "1mg", "2mg", "3mg", "4mg"]

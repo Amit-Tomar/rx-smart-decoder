@@ -25,6 +25,7 @@ import {
   faNotesMedical,
   faCheck
 } from "@fortawesome/free-solid-svg-icons";
+import { getByPlaceholderText } from "@testing-library/dom";
 
 const Label = styled("label")`
   padding: 0 0 4px;
@@ -45,7 +46,7 @@ const LabelDescriptor = styled("label")`
 `;
 
 const InputWrapper = styled("div")`
-  width: 80%;
+  width: 95%;
   border: 1px solid #d9d9d9;
   background-color: #fff;
   border-radius: 4px;
@@ -209,6 +210,8 @@ export default function Autocomplete(filterOptions = { filterOptions }) {
   const [skipped, setSkipped] = React.useState(new Set());
 
   autoSuggestedList.length = 0;
+  let currentValue = getInputProps().value;
+  console.log(getInputProps());
   if (activeStep === 0) {
     autoSuggestedList = medications.map(medication => medication.medicine);
   } else if (activeStep === 1) {
@@ -218,17 +221,14 @@ export default function Autocomplete(filterOptions = { filterOptions }) {
       }
     });
 
-    const currentValue = getInputProps().value;
-
     if (currentValue) {
       autoSuggestedList.push(currentValue + "mg");
       autoSuggestedList.push(currentValue + "ml");
       autoSuggestedList.push(currentValue + "mg/ml");
     }
   } else if (activeStep === 2) {
-    const currentValue = +getInputProps().value;
-
     if (!isNaN(currentValue)) {
+      currentValue = currentValue || 1;
       autoSuggestedList.push(
         currentValue + "-" + currentValue + "-" + currentValue
       );
@@ -255,16 +255,15 @@ export default function Autocomplete(filterOptions = { filterOptions }) {
         currentValue + "-" + currentValue + "-0-" + currentValue
       );
       autoSuggestedList.push(
-        currentValue + "-" + currentValue + currentValue + "-0"
+        currentValue + "-" + currentValue + "-" + currentValue + "-0"
       );
     }
   } else if (activeStep === 3) {
-    const currentValue = +getInputProps().value;
-
     if (!isNaN(currentValue)) {
-      autoSuggestedList.push(currentValue + "days");
-      autoSuggestedList.push(currentValue + "weeks");
-      autoSuggestedList.push(currentValue + "months");
+      currentValue = currentValue || 1;
+      autoSuggestedList.push(currentValue + "day");
+      autoSuggestedList.push(currentValue + "week");
+      autoSuggestedList.push(currentValue + "month");
     }
   }
 
@@ -286,6 +285,23 @@ export default function Autocomplete(filterOptions = { filterOptions }) {
         return "Dosing Time";
       case 3:
         return "Duration";
+      case 4:
+        return "Suggestion";
+      default:
+        return <FontAwesomeIcon icon={faCheck} color="green" />;
+    }
+  }
+
+  function getByPlaceholderText(step) {
+    switch (step) {
+      case 0:
+        return "Diazepam";
+      case 1:
+        return "10mg";
+      case 2:
+        return "1-1-1";
+      case 3:
+        return "4day";
       case 4:
         return "Suggestion";
       default:
@@ -336,66 +352,85 @@ export default function Autocomplete(filterOptions = { filterOptions }) {
   };
 
   return (
-    <div>
-      <Grid container spacing={0}>
-        <Grid item xs={3}>
-          <Stepper activeStep={activeStep} orientation="vertical">
-            {stepDescriptions.map((label, index) => {
-              label = index < 4 ? label + "*" : label;
-              const stepProps = {};
-              const labelProps = {};
-              //   if (isStepOptional(index)) {
-              //     labelProps.optional = (
-              //       <Typography variant="caption">Optional</Typography>
-              //     );
-              //   }
-              if (isStepSkipped(index)) {
-                stepProps.completed = false;
-              }
-              return (
-                <Step key={label} {...stepProps}>
-                  <StepLabel {...labelProps}>{label}</StepLabel>
-                </Step>
-              );
-            })}
-          </Stepper>
-        </Grid>
-        <Grid item xs={9}>
-          <div style={{ paddingTop: "24px" }}>
-            <Label {...getInputLabelProps()} style={{ paddingBottom: "10px" }}>
-              Press enter after input
-            </Label>
-            <div {...getRootProps()}>
-              <InputWrapper
-                ref={setAnchorEl}
-                className={focused ? "focused" : ""}
-              >
-                <LabelDescriptor {...getInputLabelProps()}>
-                  {getStepContent(activeStep)}
-                </LabelDescriptor>
-                {value.map((option, index) => (
-                  <Tag
-                    label={option || option}
-                    currentInputIndex={index}
-                    {...getTagProps({ index })}
-                  />
-                ))}
-                <input {...getInputProps()} />
-              </InputWrapper>
-            </div>
-            {groupedOptions.length > 0 ? (
-              <Listbox {...getListboxProps()}>
-                {groupedOptions.map((option, index) => (
-                  <li {...getOptionProps({ option, index })}>
-                    <span>{option}</span>
-                    <CheckIcon fontSize="small" />
-                  </li>
-                ))}
-              </Listbox>
-            ) : null}
-          </div>
-        </Grid>
-      </Grid>
+    <div style={{ padding: "24px" }}>
+      <Card style={{ padding: "10px" }}>
+        <Typography variant="h3" gutterBottom style={{ fontSize: "2.5em" }}>
+          Prescription for Amit Tomar
+        </Typography>
+
+        <Typography
+          variant="h6"
+          gutterBottom
+          style={{ fontSize: "1em", color: "grey" }}
+        >
+          Dr. Robert N., General Physician
+        </Typography>
+        <Typography
+          variant="h6"
+          gutterBottom
+          style={{ fontSize: "1em", color: "grey" }}
+        >
+          Last visited on : 2 Nov 2019
+        </Typography>
+      </Card>
+
+      <div style={{ padding: "10px" }}>
+        {/* orientation="vertical" */}
+        <Stepper activeStep={activeStep}>
+          {stepDescriptions.map((label, index) => {
+            label = index < 4 ? label + "*" : label;
+            const stepProps = {};
+            const labelProps = {};
+            //   if (isStepOptional(index)) {
+            //     labelProps.optional = (
+            //       <Typography variant="caption">Optional</Typography>
+            //     );
+            //   }
+            if (isStepSkipped(index)) {
+              stepProps.completed = false;
+            }
+            return (
+              <Step key={label} {...stepProps}>
+                <StepLabel {...labelProps}>{label}</StepLabel>
+              </Step>
+            );
+          })}
+        </Stepper>
+        <Label {...getInputLabelProps()} style={{ paddingBottom: "10px" }}>
+          Press enter after input
+        </Label>
+        <div {...getRootProps()}>
+          <InputWrapper ref={setAnchorEl} className={focused ? "focused" : ""}>
+            <LabelDescriptor {...getInputLabelProps()}>
+              {getStepContent(activeStep)}
+            </LabelDescriptor>
+            {value.map((option, index) => (
+              <Tag
+                label={option || option}
+                currentInputIndex={index}
+                {...getTagProps({ index })}
+              />
+            ))}
+            {activeStep < 5 && (
+              <input
+                {...getInputProps()}
+                placeholder={getByPlaceholderText(activeStep)}
+                pattern="[A-Z]"
+              />
+            )}
+          </InputWrapper>
+        </div>
+        {groupedOptions.length > 0 ? (
+          <Listbox {...getListboxProps()}>
+            {groupedOptions.map((option, index) => (
+              <li {...getOptionProps({ option, index })}>
+                <span>{option}</span>
+                <CheckIcon fontSize="small" />
+              </li>
+            ))}
+          </Listbox>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -14,6 +14,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import matchSorter from "match-sorter";
+import Tour from "reactour";
+import Button from "@material-ui/core/Button";
+import "./App.css";
 
 import {
   faPrescriptionBottle,
@@ -168,6 +171,16 @@ const Listbox = styled("ul")`
 
 export default function Autocomplete() {
   var [autoSuggestedList, setAutoSuggestedList] = useState([]);
+  const [runTour, setRunTour] = useState(
+    localStorage.getItem("tour") ? false : true
+  );
+  const [defaultValue, setSefaultValue] = useState(true);
+
+  //   if (localStorage.getItem("tour")) {
+  //   } else {
+  //     localStorage.setItem("tour", true);
+  //   }
+
   const {
     getRootProps,
     getInputLabelProps,
@@ -181,7 +194,7 @@ export default function Autocomplete() {
     setAnchorEl
   } = useAutocomplete({
     id: "customized-hook-demo",
-    defaultValue: null,
+    defaultValue: [],
     multiple: true,
     freeSolo: true,
     options: autoSuggestedList,
@@ -403,12 +416,11 @@ export default function Autocomplete() {
           Last visited on : 2 Nov 2019
         </Typography>
       </Card>
-
       <div style={{ padding: "10px" }}>
         {/* orientation="vertical" */}
         <Stepper activeStep={activeStep}>
           {stepDescriptions.map((label, index) => {
-            label = index < 4 ? label + "*" : label;
+            label = index < 5 ? label + "*" : label;
             const stepProps = {};
             const labelProps = {};
             //   if (isStepOptional(index)) {
@@ -426,15 +438,16 @@ export default function Autocomplete() {
             );
           })}
         </Stepper>
-        <Label {...getInputLabelProps()} style={{ paddingBottom: "10px" }}>
-          Press enter after input
-        </Label>
+        <Label
+          {...getInputLabelProps()}
+          style={{ paddingBottom: "10px" }}
+        ></Label>
         <div {...getRootProps()}>
           <InputWrapper ref={setAnchorEl} className={focused ? "focused" : ""}>
             <LabelDescriptor {...getInputLabelProps()}>
               {getStepContent(activeStep)}
             </LabelDescriptor>
-            {value.map((option, index) => (
+            {value.slice(0, 5).map((option, index) => (
               <Tag
                 label={option || option}
                 currentInputIndex={index}
@@ -442,14 +455,15 @@ export default function Autocomplete() {
               />
             ))}
             {/* {activeStep < 5 && ( */}
-            {
-              <input
-                {...getInputProps()}
-                placeholder={getByPlaceholderText(activeStep)}
-                onChange={handleAutocomplete}
-                onKeyPress={handleKeyPress}
-              />
-            }
+            <input
+              //   autoFocus
+              {...getInputProps()}
+              placeholder={getByPlaceholderText(activeStep)}
+              onChange={handleAutocomplete}
+              onKeyPress={handleKeyPress}
+              id="rx-input"
+            />
+            {/* )} */}
           </InputWrapper>
         </div>
         {groupedOptions.length > 0 ? (
@@ -466,6 +480,26 @@ export default function Autocomplete() {
           </Listbox>
         ) : null}
       </div>
+      <ul className="guide">
+        <li>Enter the text above and press enter.</li>
+        <li>Press backspace to delete the last input.</li>
+        <li>Press down arrow key to see the auto complete options</li>
+      </ul>
+      <Tour
+        steps={steps}
+        isOpen={runTour}
+        onRequestClose={() => {
+          setRunTour(false);
+          localStorage.setItem("tour", true);
+        }}
+      />
+      <Button
+        variant="outlined"
+        color="primary"
+        onClick={() => setRunTour(true)}
+      >
+        Show page tour
+      </Button>
     </div>
   );
 }
@@ -595,5 +629,26 @@ var medications = [
   {
     medicine: "Injection Thiamine/Multivitamin",
     dosage: ["100mg/ml"]
+  }
+];
+
+const steps = [
+  {
+    selector: ".MuiPaper-elevation0",
+    content: "Steps to follow for completing one prescription"
+  },
+  {
+    selector: "#customized-hook-demo-label",
+    content: "Shows the next input you need to fill"
+  },
+  {
+    selector: "#rx-input",
+    content: (
+      <ul>
+        <li>Enter the next input here and press enter.</li>
+        <li>Press backspace to delete the last input.</li>
+        <li>Press down arrow to see the auto complete options</li>
+      </ul>
+    )
   }
 ];

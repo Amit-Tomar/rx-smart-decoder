@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+
+ul {
+  padding: 0px;
+  margin: 0px;
+}
+
+.sc-AykKG {
+  max-width: 500px !important;
+}
+
+.guide {
+  padding: 30px;
+}
+
+.guide > li {
+  padding: 2px;
+}
+
+.MuiButton-root {
+  position: absolute !important;
+  top: 20px;
+  right: 20px;
+}

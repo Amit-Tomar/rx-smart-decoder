@@ -54,8 +54,20 @@ ul {
   padding: 2px;
 }
 
-.MuiButton-root {
+.thought {
   position: absolute !important;
   top: 20px;
-  right: 20px;
+  right: 200px;
+}
+
+.page-tour {
+  position: absolute !important;
+  top: 20px;
+  right: 23px;
+}
+
+.design-text {
+  text-align: justify;
+  text-justify: inter-word;
+  padding: 15px;
 }

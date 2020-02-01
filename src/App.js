@@ -1,4 +1,6 @@
 /* eslint-disable no-use-before-define */
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Dialog from "@material-ui/core/Dialog";
 import React, { useState, useEffect } from "react";
 import useAutocomplete from "@material-ui/lab/useAutocomplete";
 import CheckIcon from "@material-ui/icons/Check";
@@ -174,7 +176,7 @@ export default function Autocomplete() {
   const [runTour, setRunTour] = useState(
     localStorage.getItem("tour") ? false : true
   );
-  const [defaultValue, setSefaultValue] = useState(true);
+  const [thoughtProcess, setThoughtProcess] = useState(false);
 
   //   if (localStorage.getItem("tour")) {
   //   } else {
@@ -493,13 +495,51 @@ export default function Autocomplete() {
           localStorage.setItem("tour", true);
         }}
       />
+
       <Button
+        className="page-tour"
         variant="outlined"
         color="primary"
         onClick={() => setRunTour(true)}
       >
         Show page tour
       </Button>
+
+      <Button
+        className="thought"
+        variant="outlined"
+        color="primary"
+        onClick={() => setThoughtProcess(true)}
+      >
+        Design
+      </Button>
+
+      <Dialog
+        onClose={() => setThoughtProcess(false)}
+        aria-labelledby="simple-dialog-title"
+        open={thoughtProcess}
+      >
+        <DialogTitle id="simple-dialog-title">Design</DialogTitle>
+        <div className="design-text">
+          This implementation tries to solve the problem as a UX issue. The
+          fundamental problem faced by the doctor while writting digital
+          prescription is entering the data in multiple fields, which usually
+          involves moving mouse repeatedly to select a particular field.
+        </div>
+
+        <div className="design-text">
+          We try to solve this problem by providing a single source of taking
+          input, where user can enter/remove all the fields related to a
+          prescription. User is never expected to use mouse, and can easiely
+          enter all the data by just using his keyboard.
+        </div>
+
+        <div className="design-text">
+          All the use-cases mentioned in the problem statement are not
+          implemented. This implementation just gives a direction that this
+          issue could be solved by changing the User Experience.
+        </div>
+      </Dialog>
     </div>
   );
 }

@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/rx-smart-decoder/precache-manifest.aa1c029cba5a8b6885cf300b0dcb5d44.js"
+  "/rx-smart-decoder/precache-manifest.5d59f1753dbcf0a2ef28ab11f0d0fac8.js"
 );
 
 self.addEventListener('message', (event) => {
